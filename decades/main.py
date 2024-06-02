@@ -31,43 +31,32 @@ def callback(verbose: Annotated[bool, typer.Option("-v", "--verbose", help="Adds
     """
     if verbose:
         log.setLevel(logging.DEBUG)
-
     
     if rebuild:
-        confirm = Confirm.ask("[red]Are you sure you want to rebuild?", default=False)
-        if confirm:
-            if os.path.exists(f"{root}/.decades"):
-                shutil.rmtree(f"{root}/.decades")
-            os.makedirs(f"{root}/.decades")
-            with open(f"{root}/.decades/files.json", "w") as f:
-                json.dump([], f, indent=4)
-            if not os.path.exists(f"{root}/.decades/snapshots"):
-                log.debug("Creating snapshots directory...")
-                os.makedirs(f"{root}/.decades/snapshots")
-            if not os.path.exists(f"{root}/.decades/config.json"):
-                log.debug("Creating config.json...")
-                with open(f"{root}/.decades/config.json", "w") as f:
-                    json.dump({}, f, indent=4)
-        else:
-            print("[dim]Aborted.[/dim]")
-
-    if not os.path.exists(f"{root}/.decades"):
-        log.debug("Creating .decades directory...")
-        os.makedirs(f"{root}/.decades")
-    
-    if not os.path.exists(f"{root}/.decades/files.json"):
-        log.debug("Creating files.json...")
-        with open(f"{root}/.decades/files.json", "w") as f:
-            json.dump([], f, indent=4)
-    
-    if not os.path.exists(f"{root}/.decades/snapshots"):
-        log.debug("Creating snapshots directory...")
+        if os.path.exists(f"{root}/.decades"):
+            shutil.rmtree(f"{root}/.decades")
         os.makedirs(f"{root}/.decades/snapshots")
+        with open(f"{root}/.decades/files.json", "w") as f, open(f"{root}/.decades/config.json", "w") as cf:
+            json.dump([], f, indent=4)
+            json.dump({}, cf, indent=4)
+        confirm = Confirm.ask("[red]Are you sure you want to rebuild?", default=False)
+        if not confirm:
+            print("[dim]Aborted.[/dim]")
+        else:
+            print("[green]Rebuilt successfully.[/green]")
 
-    if not os.path.exists(f"{root}/.decades/config.json"):
-        log.debug("Creating config.json...")
-        with open(f"{root}/.decades/config.json", "w") as f:
-            json.dump({}, f, indent=4)
+    paths = [
+        f"{root}/.decades/files.json",
+        f"{root}/.decades/snapshots",
+        f"{root}/.decades/config.json",
+    ]
+    for path in paths:
+        if not os.path.exists(path):
+            log.debug(f"Creating {path}...")
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as f:
+                if path.endswith(".json"):
+                    json.dump({}, f, indent=4)
 
 
 @app.command()
@@ -135,15 +124,19 @@ def gallery():
     with open(f"{root}/.decades/files.json", "r") as f:
         files = json.load(f)
         
+        log.debug("Creating table...")
         table = Table(show_header=True, header_style="bold")
         table.add_column("#", style="dim", width=3)
         table.add_column("Name", style="bold", width=10)
         table.add_column("Path", style="dim", width=40)
         
+        log.debug("Adding files to table...")
         for i, file in enumerate(files):
             table.add_row(str(i), f"[blue]{file["name"]}", f"[yellow]{file["path"]}")
         
         print(table)
+        
+        log.debug("Creating choice list...")
         choices = [str(i) for i in range(len(files))]
         choice = Prompt.ask("Which snapshot would you like to use? (Press Enter to exit)", choices=choices, default=None)
         if choice is None:
@@ -154,3 +147,9 @@ def gallery():
             shutil.copytree(chosen['path'], path, copy_function=shutil.copy2, ignore=shutil.ignore_patterns('.git', '.venv'))
             print(f"Snapshot cloned to {path}.")
 
+@app.command()
+def config():
+    """
+    View the config.json file.
+    """
+    typer.launch(f"{root}/.decades", locate=True)

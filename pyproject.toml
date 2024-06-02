@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "decades"
 version = "0.1.0"
-description = ""
+description = "A CLI tool to save recovery snapshots of your projects or files. ⌚"
 authors = ["Adam Garza <168875175+hyerland@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
@@ -14,6 +14,9 @@ decades = "decades.main:app"
 python = "^3.8"
 typer = {extras = ["all"], version = "^0.12.3"}
 
+
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "^9.5.25"
 
 [build-system]
 requires = ["poetry-core"]

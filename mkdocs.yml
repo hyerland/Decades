@@ -1,5 +1,7 @@
 site_name: Decades
 site_url: https://hyerland.github.io/decades
+
+repo_name: hyerland/decades
 repo_url: https://github.com/hyerland/decades
 
 nav:

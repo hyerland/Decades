@@ -43,6 +43,12 @@ decades snap
 
 This will create a **snapshot** of your project or file in the directory, `.decades`, to be saved and reused later.
 
+You can view these snapshots and recover them by running the following command:
+
+```bash
+decades gallery
+```
+
 ## License 🛡️
 
 Decades is licensed under the **MIT License** which allows you, the developer, to use the software in any way you want.
